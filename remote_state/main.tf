@@ -28,26 +28,43 @@ data "aws_caller_identity" "current" {}
 locals {
   account_id    = data.aws_caller_identity.current.account_id
 }
-
+# 1. Create the basic bucket
 resource "aws_s3_bucket" "terraform_state" {
   # With account id, this S3 bucket names can be *globally* unique.
   bucket = "${local.account_id}-terraform-states"
-
+}
+# 2. Separate Versioning Resource
+resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
+  bucket = aws_s3_bucket.terraform_state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
   # Enable versioning so we can see the full revision history of our
   # state files
-  versioning {
-    enabled = true
-  }
+  #versioning {
+   # enabled = true
+  #}
 
-  # Enable server-side encryption by default
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+# 3. Separate Encryption Resource
+resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_crypto" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
 }
+  # Enable server-side encryption by default
+  #server_side_encryption_configuration {
+  #  rule {
+   #   apply_server_side_encryption_by_default {
+   #     sse_algorithm = "AES256"
+    #  }
+    #}
+ # }
+#}
 
 # ------------------------------------------------------------------------------
 # CREATE THE DYNAMODB TABLE
