@@ -7,6 +7,14 @@ terraform {
   }
 
   required_version = ">= 1.2.0"
+ # ADD THIS BLOCK BELOW
+  backend "s3" {
+    bucket         = "919466768284-terraform-states"
+    key            = "ec2-project/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-lock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
@@ -21,13 +29,3 @@ resource "aws_instance" "app_server" {
     Name = "Terraform_Demo"
   }
 }
-
-  # ADD THIS BLOCK BELOW
-  backend "s3" {
-    bucket         = "919466768284-terraform-states"
-    key            = "ec2-project/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-lock"
-    encrypt        = true
-  }
-
